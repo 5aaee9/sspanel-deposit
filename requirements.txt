@@ -1,0 +1,4 @@
+pyjade==4.0.0
+requests==2.11.1
+flask==0.11.1
+cymysql==0.8.9

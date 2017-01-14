@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block main %}
+<div style="margin-top: 1em;" class="mdui-container">
+    {% if errors %}
+        <div class="mdui-card" style="margin-bottom: 1em;">
+            <div class="mdui-card-content">
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    <div class="mdui-row">
+        <div class="mdui-col-xs-9">
+            <form method="POST">
+                <div class="mdui-textfield">
+                    <input placeholder="Input a number you want to deposit" type="text" name="number"
+                           class="mdui-textfield-input"/>
+                </div>
+                <div class="mdui-textfield">
+                    <input placeholder="Input a email address to receive mail" type="text" name="email"
+                           class="mdui-textfield-input"/>
+                </div>
+                <button type="submit"
+                        class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple mdui-btn-block">Go
+                </button>
+            </form>
+        </div>
+        <div class="mdui-col-xs-3">
+            <div class="mdui-card">
+                <div class="mdui-card-primary">
+                    <div class="mdui-card-primary-title">警告</div>
+                </div>
+                <div class="mdui-card-content">购买完成之后请等待跳转回来提取卡密 请不要关闭付款成功窗口</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+#intro {
+  text-align: center;
+  color: rgb(38, 107, 111);
+  padding-top: 80px;
+}
+
+#intro .title {
+  font-size: 26px;
+}
+#intro .description {
+  font-size: 14px;
+}
+
+@media (min-width: 600px) {
+  #intro {
+    padding-top: 120px;
+  }
+  #intro .title {
+    font-size: 30px;
+  }
+  #intro .description {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  #intro {
+    padding-top: 160px;
+  }
+  #intro .title {
+    font-size: 38px;
+  }
+  #intro .description {
+    font-size: 20px;
+  }
+}
+@media (min-width: 1440px) {
+  #intro .title {
+    font-size: 45px;
+  }
+  #intro .description {
+    font-size: 20px;
+  }
+}

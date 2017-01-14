@@ -1,0 +1,8 @@
+<form name='form1' action='http://api.web567.net/plugin.php?id=add:alipay' method='POST'>
+    <input type='hidden' name='uid' value='{{ config.uuid }}'>
+    <input type='hidden' name='total' value='{{ config.total }}'>
+    <input type='hidden' name='apiid' value='{{ config.apiid }}'>
+    <input type='hidden' name='showurl' value='{{ config.showurl }}'>
+    <input type='hidden' name='apikey' value='{{ config.apikey }}'>
+</form>
+<script>window.onload=function(){document.form1.submit();}</script>
