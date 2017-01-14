@@ -80,9 +80,11 @@ class Actions(object):
             except ValueError:
                 return redirect(url_for('index'))
 
-        @self.app.route("/success", methods=["POST"])
+        @self.app.route("/success", methods=["POST", "GET"])
         def success():
-            print
+            if request.method == "GET":
+                return redirect(url_for('index'))
+
             self._db.connect()
             try:
                 uid = int(request.form["uid"])
