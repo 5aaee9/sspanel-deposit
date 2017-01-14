@@ -108,10 +108,11 @@ class Actions(object):
 
             self._db.createMoneyCode(code, amount)
 
-            self.sendMail("Indexyz <bill@shadowsocks.nu>", email, "Thanks for your product.", """Hi,
-Thanks for you product in our service.
-Your code is: %s
-You deposit: %s
+            self.sendMail("Indexyz <bill@shadowsocks.nu>", email, "感谢您的订购.", """Hi,
+非常感谢您选择了我们的服务.
+你的充值码: %s
+充值码面额: %s
+
 Thanks,
 Indexyz""" % (code, amount))
 
