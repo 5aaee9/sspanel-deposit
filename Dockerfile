@@ -13,5 +13,5 @@ WORKDIR ["/usr/app"]
 
 EXPOSE "5000/tcp"
 
-CMD ["python"]
-ENTRYPOINT ["/usr/app/Alipay-Panel.py"]
+ENTRYPOINT ["python"]
+CMD ["/usr/app/Alipay-Panel.py"]
