@@ -19,7 +19,7 @@ def isEmail(email):
 class Actions(object):
     def __init__(self, app):
         self.app = app
-        self._db = Db.Db(False)
+        self._db = Db
 
     @staticmethod
     def sendMail(fromP, toP, subject, text):
@@ -38,7 +38,6 @@ class Actions(object):
     def init(self):
         @self.app.route("/", methods=['GET', 'POST'])
         def index():
-            self._db.connect()
             errors = []
             status = 200
             try:
@@ -65,7 +64,6 @@ class Actions(object):
 
         @self.app.route("/deposit/<tid>")
         def deposit(tid):
-            self._db.connect()
             try:
                 tid = int(tid)
                 if self._db.isTradeFinished(tid):
@@ -86,7 +84,6 @@ class Actions(object):
             if request.method == "GET":
                 return redirect(url_for('index'))
 
-            self._db.connect()
             try:
                 uid = int(request.form["uid"])
                 addnum = request.form["addnum"]

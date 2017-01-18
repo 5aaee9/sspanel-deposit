@@ -1,149 +1,140 @@
 import cymysql
 import Config
+from cymysql.converters import escape_string as escape
 
 
-class Db(object):
-    _conn = None
-    _pconn = None
+def getCursor(db):
+    def _call(func):
+        def __call(*args, **kwargs):
+            _conn = cymysql.connect(host=Config.DB_HOST, port=Config.DB_PORT, user=Config.DB_USER,
+                                    passwd=Config.DB_PASS, db=db, charset='utf8')
+            _conn.autocommit(True)
+            cur = _conn.cursor()
+            ret = func(cur, *args, **kwargs)
+            cur.close()
+            _conn.close()
+            return ret
+        return __call
+    return _call
 
-    def __init__(self, connect=True):
-        if connect:
-            self.connect()
 
-    def connect(self):
-        """
-        Connect to mysql Server
+@getCursor(Config.DB_PAYBASE)
+def createTrade(cur, amount, email):
+    """
+    Create a trade of Alipay
 
-        :return: Nil
-        """
-        if not self._conn:
-            self._conn = cymysql.connect(host=Config.DB_HOST, port=Config.DB_PORT, user=Config.DB_USER,
-                                         passwd=Config.DB_PASS, db=Config.DB_BASE, charset='utf8')
-        if not self._pconn:
-            self._pconn = cymysql.connect(host=Config.DB_HOST, port=Config.DB_PORT, user=Config.DB_USER,
-                                          passwd=Config.DB_PASS, db=Config.DB_PAYBASE, charset='utf8')
-        self._conn.autocommit(True)
-        self._pconn.autocommit(True)
+    :param conn: connect
+    :param cur: Connect of Db
+    :type amount: int
+    :param amount: The amount of money
+    :param email: The user email
+    :return: Created id
+    """
+    cur.execute("INSERT INTO `trade` (`status`, `amount`, `email`) VALUES ('0', '" + str(amount) + "', " + escape(email) + ");")
+    cur.execute("select LAST_INSERT_ID();")
+    rows = cur.fetchone()
+    if rows is None:
+        return -1
+    return rows[0]
 
-    def disconnect(self):
-        """
-        Disconnect from MySQL Server
 
-        :return: Nil
-        """
-        self._conn.close()
-        self._pconn.close()
+@getCursor(Config.DB_PAYBASE)
+def finishTrade(cur, tid, addsum):
+    """
+    Finish a trade
 
-    def createTrade(self, amount, email):
-        """
-        Create a trade of Alipay
+    :param conn: connect
+    :param cur: Connect of Db
+    :param addsum: The addsum that api return
+    :param tid: The trade's id
+    :return: Nil
+    """
+    cur.execute("UPDATE `trade` SET `status` = 1, `addsum` = " + escape(addsum) + " WHERE `id`=" + str(tid) + ";")
 
-        :type amount: int
-        :param amount: The amount of money
-        :param email: The user email
-        :return: Created id
-        """
-        cur = self._pconn.cursor()
-        cur.execute("INSERT INTO `trade` (`status`, `amount`, `email`) VALUES ('0', '" + str(amount) + "', " + self._pconn.escape(email) + ");")
-        cur.execute("select LAST_INSERT_ID();")
-        rows = cur.fetchone()
-        cur.close()
-        if rows is None:
-            return -1
-        return rows[0]
 
-    def finishTrade(self, tid, addsum):
-        """
-        Finish a trade
+@getCursor(Config.DB_PAYBASE)
+def isTradeFinished(cur, tid):
+    """
+    Check trade is finished
+    Because one trade maybe use may times
 
-        :param addsum: The addsum that api return
-        :param tid: The trade's id
-        :return: Nil
-        """
-        cur = self._pconn.cursor()
-        cur.execute("UPDATE `trade` SET `status` = 1, `addsum` = " + self._pconn.escape(addsum) + " WHERE `id`=" + str(tid) + ";")
-        cur.close()
+    :param cur: Connect of Db
+    :param tid: Trade id
+    :return: The status of trade
+    :rtype: bool
+    """
+    cur.execute("SELECT status FROM `trade` WHERE `id`=" + str(tid) + ";")
+    rows = cur.fetchone()
+    if rows is not None and rows[0] == 0:
+        return False
+    else:
+        return True
 
-    def isTradeFinished(self, tid):
-        """
-        Check trade is finished
-        Because one trade maybe use may times
 
-        :param tid: Trade id
-        :return: The status of trade
-        :rtype: bool
-        """
-        cur = self._pconn.cursor()
-        cur.execute("SELECT status FROM `trade` WHERE `id`=" + str(tid) + ";")
-        rows = cur.fetchone()
-        cur.close()
-        if rows is not None and rows[0] == 0:
-            return False
-        else:
-            return True
+@getCursor(Config.DB_BASE)
+def createMoneyCode(cur, code, amount):
+    """
+    Create the money code
 
-    def createMoneyCode(self, code, amount):
-        """
-        Create the money code
+    :param cur: Connect of Db
+    :param code: The code you want to create
+    :param amount: The amount the code has
+    :return: Code's ID
+    :rtype: int
+    """
+    cur.execute("INSERT INTO `code` (`code`, `type`, `number`, `isused`, `userid`, `usedatetime`) VALUES ('" + str(
+        code) + "', -1, " + str(float(amount)) + ", 0, 0, '1989:06:04 02:30:00')")
+    cur.execute("select LAST_INSERT_ID();")
+    rows = cur.fetchone()
+    if rows is None:
+        return -1
+    return rows[0]
 
-        :param code: The code you want to create
-        :param amount: The amount the code has
-        :return: Code's ID
-        :rtype: int
-        """
-        cur = self._conn.cursor()
-        cur.execute("INSERT INTO `code` (`code`, `type`, `number`, `isused`, `userid`, `usedatetime`) VALUES ('" + str(code) + "', -1, " + str(float(amount)) + ", 0, 0, '1989:06:04 02:30:00')")
-        cur.execute("select LAST_INSERT_ID();")
-        rows = cur.fetchone()
-        cur.close()
-        if rows is None:
-            return -1
-        return rows[0]
 
-    def getMoneyCode(self, tid):
-        """
-        Get the card id of code
+@getCursor(Config.DB_BASE)
+def getMoneyCode(cur, tid):
+    """
+    Get the card id of code
 
-        :param tid: Code id
-        :return: Card ID
-        """
-        cur = self._conn.cursor()
-        cur.execute("SELECT code FROM `code` WHERE `id`=" + str(tid) + ";")
-        rows = cur.fetchone()
-        cur.close()
-        if rows is None:
-            return ""
-        return rows[0]
+    :param cur: connect
+    :param tid: Code id
+    :return: Card ID
+    """
+    cur.execute("SELECT code FROM `code` WHERE `id`=" + str(tid) + ";")
+    rows = cur.fetchone()
+    if rows is None:
+        return ""
+    return rows[0]
 
-    def getAmount(self, tid):
-        """
-        Get the amount of trade
 
-        :param tid: Trade id
-        :return: Trade amount
-        """
-        cur = self._pconn.cursor()
-        cur.execute("SELECT amount FROM `trade` WHERE `id`=" + str(tid) + ";")
-        rows = cur.fetchone()
-        cur.close()
-        if rows is None:
-            return -1
-        return rows[0]
+@getCursor(Config.DB_PAYBASE)
+def getAmount(cur, tid):
+    """
+    Get the amount of trade
 
-    def getMail(self, tid):
-        """
-        Get the email of trade
+    :param cur: connect
+    :param tid: Trade id
+    :return: Trade amount
+    """
+    cur.execute("SELECT amount FROM `trade` WHERE `id`=" + str(tid) + ";")
+    rows = cur.fetchone()
+    if rows is None:
+        return -1
+    return rows[0]
 
-        :param tid: Trade id
-        :return: Trade amount
-        """
-        cur = self._pconn.cursor()
-        cur.execute("SELECT email FROM `trade` WHERE `id`=" + str(tid) + ";")
-        rows = cur.fetchone()
-        cur.close()
-        if rows is None:
-            return -1
-        return rows[0]
 
-    def __del__(self):
-        self.disconnect()
+@getCursor(Config.DB_PAYBASE)
+def getMail(cur, tid):
+    """
+    Get the email of trade
+
+    :param cur: connect
+    :param tid: Trade id
+    :return: Trade amount
+    """
+    cur.execute("SELECT email FROM `trade` WHERE `id`=" + str(tid) + ";")
+    rows = cur.fetchone()
+    if rows is None:
+        return -1
+    return rows[0]
+
