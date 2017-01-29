@@ -11,22 +11,32 @@
         </div>
     {% endif %}
     <div class="mdui-row">
-        <div class="mdui-col-xs-9">
-            <form method="POST">
+        <div class="mdui-col-md-9">
+            <form method="POST" id="buyForm">
                 <div class="mdui-textfield">
-                    <input placeholder="输入充值的数值 (最小0.01)" type="text" name="number"
+                    <input placeholder="输入充值的数值 (最小0.01)" type="text" name="number" id="amount"
                            class="mdui-textfield-input"/>
                 </div>
                 <div class="mdui-textfield">
-                    <input placeholder="输入接收充值码的邮箱" type="text" name="email"
+                    <input placeholder="输入接收充值码的账号" type="text" name="email" id="email"
                            class="mdui-textfield-input"/>
                 </div>
-                <button type="submit"
-                        class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple mdui-btn-block">Go
-                </button>
+                <input type="text" id="type" name="type" value="0" hidden="true"/>
+                <div class="mdui-row">
+                    <div class="mdui-col-xs-6">
+                        <button id="redirectPay" type="submit"
+                                class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple mdui-btn-block">跳转到支付宝
+                        </button>
+                    </div>
+                    <div class="mdui-col-xs-6">
+                        <button id="codePay"
+                                class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple mdui-btn-block">扫码支付
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
-        <div class="mdui-col-xs-3">
+        <div class="mdui-col-md-3">
             <div class="mdui-card">
                 <div class="mdui-card-primary">
                     <div class="mdui-card-primary-title">警告</div>

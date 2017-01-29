@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block main %}
+    <div style="margin-top: 1em;" class="mdui-container">
+        <div id="intro" class="mdui-container-fluid">
+            <div class="title mdui-p-b-2">
+                <iframe width="200" height="200" frameborder="0" id="buyIframe" scrolling="no" onchange="change()"
+                        src="{{ url }}"></iframe>
+            </div>
+            <div class="description mdui-typo">
+                <p>请扫描二维码进行付款</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

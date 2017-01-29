@@ -40,6 +40,7 @@ class Actions(object):
         def index():
             errors = []
             status = 200
+            types = 0
             try:
                 if not isEmail(request.form["email"]):
                     errors.append("Error email address")
@@ -47,6 +48,10 @@ class Actions(object):
                     float(request.form["number"])
                 except ValueError:
                     errors.append("Numbers Error!")
+                try:
+                    types = int(request.form["type"])
+                except ValueError:
+                    errors.append("Unknow Error!")
             except KeyError:
                 errors.append("Error form!")
 
@@ -54,13 +59,34 @@ class Actions(object):
                 email = request.form["email"]
                 amount = float(request.form["number"])
                 tid = self._db.createTrade(amount, email)
-                return redirect(url_for('deposit', tid=tid))
+                print types
+                if types == 0:
+                    return redirect(url_for('deposit', tid=tid))
+                else:
+                    return redirect(url_for('code', tid=tid))
 
             if request.method == "GET":
                 errors = []
             else:
                 status = 422
+            if types == 1:
+                return json.dumps({"ok": 0, "errors": errors}), 422
             return render_template("index.html", errors=errors), status
+
+        @self.app.route("/code/<tid>")
+        def code(tid):
+            try:
+                tid = int(tid)
+                if self._db.isTradeFinished(tid):
+                    return redirect(url_for('index'))
+                amount = self._db.getAmount(tid)
+                return render_template("code.html",
+                                       url="http://api.web567.net/plugin.php?id=add:alipay2&total=%s&apiid=%s&apikey=%s&uid=%s&showurl=%s" % (
+                                           amount, Config.ALIPAY_ID, hashlib.md5(Config.ALIPAY_KEY).hexdigest(), tid,
+                                           Config.SITE_ADDR + url_for('success') + "?type=1"
+                                       ))
+            except ValueError:
+                return redirect(url_for('index'))
 
         @self.app.route("/deposit/<tid>")
         def deposit(tid):
@@ -88,6 +114,10 @@ class Actions(object):
                 uid = int(request.form["uid"])
                 addnum = request.form["addnum"]
                 apikey = request.form["apikey"]
+                if "type" not in request.args:
+                    type = 0
+                else:
+                    type = 1
             except ValueError:
                 return redirect(url_for('index'))
 
@@ -114,4 +144,21 @@ class Actions(object):
 Thanks,
 Indexyz""" % (code, amount))
 
-            return render_template("success.html", email=email)
+            template = {
+                0: "success.html",
+                1: "success_code.html"
+            }[type]
+
+            if not addnum.startswith("alip"):
+                return render_template(template, email=email, type=True)
+            return render_template(template, email=email, type=False)
+
+        @self.app.route("/success/<tid>", methods=["POST", "GET"])
+        def successById(tid):
+            try:
+                mail = self._db.getMail(tid)
+                if not mail:
+                    raise ValueError
+            except Exception as e:
+                return redirect(url_for('index'))
+            return render_template("success.html", email=mail, type=False)

@@ -1,0 +1,9 @@
+<div style="margin:0 auto;">
+    <span id="successCode">感谢您的订购</span>
+</div>
+
+<script>
+     var turnTo = window.parent.document.location.href.substring(0,window.parent.document.location.href.indexOf(window.parent.document.location.pathname)) + "/success" +
+                  window.parent.document.location.pathname.substring(5, window.parent.document.location.pathname.length);
+    window.parent.location.href = turnTo;
+</script>

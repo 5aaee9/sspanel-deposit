@@ -15,6 +15,12 @@
             {% block main %}
             {% endblock %}
         </main>
+        <script src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
         <script src="/static/js/mdui.min.js"></script>
+        <script src="/static/js/custom.js"></script>
+        <script>
+        {% block script %}
+        {% endblock %}
+        </script>
     </body>
 </html>
