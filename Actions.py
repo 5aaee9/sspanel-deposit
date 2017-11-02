@@ -10,6 +10,7 @@ import random
 import json
 import re
 import Db
+from datetime import datetime
 
 
 def isEmail(email):
@@ -20,6 +21,7 @@ class Actions(object):
     def __init__(self, app):
         self.app = app
         self._db = Db
+        self.trade_time = datetime.now().strftime('%Y%m%d%H%M%S%f')
 
     @staticmethod
     def sendMail(fromP, toP, subject, text):
@@ -36,7 +38,7 @@ class Actions(object):
         return ''.join(random.sample(string.ascii_letters + string.digits, size))
 
     def init(self):
-        @self.app.route("/", methods=['GET', 'POST'])
+        @self.app.route("/deposit/", methods=['GET', 'POST'])
         def index():
             errors = []
             status = 200
@@ -59,7 +61,6 @@ class Actions(object):
                 email = request.form["email"]
                 amount = float(request.form["number"])
                 tid = self._db.createTrade(amount, email)
-                print types
                 if types == 0:
                     return redirect(url_for('deposit', tid=tid))
                 else:
@@ -73,24 +74,26 @@ class Actions(object):
                 return json.dumps({"ok": 0, "errors": errors}), 422
             return render_template("index.html", errors=errors), status
 
-        @self.app.route("/code/<tid>")
+        @self.app.route("/deposit/code/<tid>")
         def code(tid):
             try:
+                billing_id = str(2113447) + str(self.trade_time)
                 tid = int(tid)
                 if self._db.isTradeFinished(tid):
                     return redirect(url_for('index'))
                 amount = self._db.getAmount(tid)
                 return render_template("code.html",
-                                       url="https://api.jsjapp.com/plugin.php?id=add:alipay2&total=%s&apiid=%s&apikey=%s&uid=%s&showurl=%s" % (
-                                           amount, Config.ALIPAY_ID, hashlib.md5(Config.ALIPAY_KEY).hexdigest(), tid,
+                                       url="https://api.jsjapp.com/plugin.php?id=add:alipay2&addnum=%s&total=%s&apiid=%s&apikey=%s&uid=%s&showurl=%s" % (
+                                           billing_id, amount, Config.ALIPAY_ID, hashlib.md5(Config.ALIPAY_KEY).hexdigest(), tid,
                                            Config.SITE_ADDR + url_for('success') + "?type=1"
                                        ))
             except ValueError:
                 return redirect(url_for('index'))
 
-        @self.app.route("/deposit/<tid>")
+        @self.app.route("/deposit/charge/<tid>")
         def deposit(tid):
             try:
+                billing_id = 'alip' + str(13447) + self.trade_time
                 tid = int(tid)
                 if self._db.isTradeFinished(tid):
                     return redirect(url_for('index'))
@@ -100,12 +103,13 @@ class Actions(object):
                     "total": amount,
                     "apiid": Config.ALIPAY_ID,
                     "showurl": Config.SITE_ADDR + url_for('success'),
-                    "apikey": hashlib.md5(Config.ALIPAY_KEY).hexdigest()
+                    "apikey": hashlib.md5(Config.ALIPAY_KEY).hexdigest(),
+                    "addnum": billing_id
                 })
             except ValueError:
                 return redirect(url_for('index'))
 
-        @self.app.route("/success", methods=["POST", "GET"])
+        @self.app.route("/deposit/success", methods=["POST", "GET"])
         def success():
             if request.method == "GET":
                 return redirect(url_for('index'))
@@ -136,13 +140,13 @@ class Actions(object):
 
             self._db.createMoneyCode(code, amount)
 
-            self.sendMail("Indexyz <bill@shadowsocks.nu>", email, "感谢您的订购.", """Hi,
+            self.sendMail("游戏娘 <support@youxiniang.com>", email, "感谢您的订购.", """Hi,
 非常感谢您选择了我们的服务.
 你的充值码: %s
 充值码面额: %s
 
 Thanks,
-Indexyz""" % (code, amount))
+游戏娘""" % (code, amount))
 
             template = {
                 0: "success.html",
@@ -153,7 +157,7 @@ Indexyz""" % (code, amount))
                 return render_template(template, email=email, type=True)
             return render_template(template, email=email, type=False)
 
-        @self.app.route("/success/<tid>", methods=["POST", "GET"])
+        @self.app.route("/deposit/success/<tid>", methods=["POST", "GET"])
         def successById(tid):
             try:
                 mail = self._db.getMail(tid)

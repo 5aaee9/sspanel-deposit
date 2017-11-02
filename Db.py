@@ -137,4 +137,3 @@ def getMail(cur, tid):
     if rows is None:
         return -1
     return rows[0]
-
