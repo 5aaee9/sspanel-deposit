@@ -104,7 +104,7 @@ class Actions(object):
                     "total": amount,
                     "apiid": Config.ALIPAY_ID,
                     "showurl": Config.SITE_ADDR + url_for('success'),
-                    "apikey": hashlib.md5(Config.ALIPAY_KEY).hexdigest()
+                    "apikey": hashlib.md5(Config.ALIPAY_KEY).hexdigest(),
                     "addnum": self.billing_id
                 })
             except ValueError:
