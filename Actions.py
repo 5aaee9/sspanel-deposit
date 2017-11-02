@@ -10,7 +10,7 @@ import random
 import json
 import re
 import Db
-from datetime import datetime
+from datetime import datetime:
 
 
 def isEmail(email):
@@ -62,7 +62,6 @@ class Actions(object):
                 email = request.form["email"]
                 amount = float(request.form["number"])
                 tid = self._db.createTrade(amount, email)
-                print types
                 if types == 0:
                     return redirect(url_for('deposit', tid=tid))
                 else:
@@ -79,8 +78,6 @@ class Actions(object):
         @self.app.route("/code/<tid>")
         def code(tid):
             try:
-                # trade_time = datetime.now().strftime('%Y%m%d%H%M%S%f')
-                # billing_id = str(2113447) + str(trade_time)
                 tid = int(tid)
                 if self._db.isTradeFinished(tid):
                     return redirect(url_for('index'))
@@ -142,13 +139,13 @@ class Actions(object):
 
             self._db.createMoneyCode(code, amount)
 
-            self.sendMail("Indexyz <bill@shadowsocks.nu>", email, "感谢您的订购.", """Hi,
+            self.sendMail("游戏娘 <support@youxiniang.com>", email, "感谢您的订购.", """Hi,
 非常感谢您选择了我们的服务.
 你的充值码: %s
 充值码面额: %s
 
 Thanks,
-Indexyz""" % (code, amount))
+游戏娘""" % (code, amount))
 
             template = {
                 0: "success.html",
