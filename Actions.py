@@ -20,6 +20,8 @@ class Actions(object):
     def __init__(self, app):
         self.app = app
         self._db = Db
+        self.trade_time = datetime.now().strftime('%Y%m%d%H%M%S%f')
+        self.billing_id = str(2113447) + str(self.trade_time)
 
     @staticmethod
     def sendMail(fromP, toP, subject, text):
@@ -76,13 +78,15 @@ class Actions(object):
         @self.app.route("/code/<tid>")
         def code(tid):
             try:
+                # trade_time = datetime.now().strftime('%Y%m%d%H%M%S%f')
+                # billing_id = str(2113447) + str(trade_time)
                 tid = int(tid)
                 if self._db.isTradeFinished(tid):
                     return redirect(url_for('index'))
                 amount = self._db.getAmount(tid)
                 return render_template("code.html",
-                                       url="https://api.jsjapp.com/plugin.php?id=add:alipay2&total=%s&apiid=%s&apikey=%s&uid=%s&showurl=%s" % (
-                                           amount, Config.ALIPAY_ID, hashlib.md5(Config.ALIPAY_KEY).hexdigest(), tid,
+                                       url="https://api.jsjapp.com/plugin.php?id=add:alipay2&addnum=%s&total=%s&apiid=%s&apikey=%s&uid=%s&showurl=%s" % (
+                                           self.billing_id, amount, Config.ALIPAY_ID, hashlib.md5(Config.ALIPAY_KEY).hexdigest(), tid,
                                            Config.SITE_ADDR + url_for('success') + "?type=1"
                                        ))
             except ValueError:
@@ -101,6 +105,7 @@ class Actions(object):
                     "apiid": Config.ALIPAY_ID,
                     "showurl": Config.SITE_ADDR + url_for('success'),
                     "apikey": hashlib.md5(Config.ALIPAY_KEY).hexdigest()
+                    "addnum": self.billing_id
                 })
             except ValueError:
                 return redirect(url_for('index'))
