@@ -10,7 +10,7 @@ import random
 import json
 import re
 import Db
-from datetime import datetime:
+from datetime import datetime
 
 
 def isEmail(email):
