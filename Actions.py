@@ -38,7 +38,7 @@ class Actions(object):
         return ''.join(random.sample(string.ascii_letters + string.digits, size))
 
     def init(self):
-        @self.app.route("/", methods=['GET', 'POST'])
+        @self.app.route("/deposit/", methods=['GET', 'POST'])
         def index():
             errors = []
             status = 200
@@ -74,7 +74,7 @@ class Actions(object):
                 return json.dumps({"ok": 0, "errors": errors}), 422
             return render_template("index.html", errors=errors), status
 
-        @self.app.route("/code/<tid>")
+        @self.app.route("/deposit/code/<tid>")
         def code(tid):
             try:
                 billing_id = str(2113447) + str(self.trade_time)
@@ -90,7 +90,7 @@ class Actions(object):
             except ValueError:
                 return redirect(url_for('index'))
 
-        @self.app.route("/deposit/<tid>")
+        @self.app.route("/deposit/charge/<tid>")
         def deposit(tid):
             try:
                 billing_id = 'alip' + str(13447) + self.trade_time
@@ -109,7 +109,7 @@ class Actions(object):
             except ValueError:
                 return redirect(url_for('index'))
 
-        @self.app.route("/success", methods=["POST", "GET"])
+        @self.app.route("/deposit/success", methods=["POST", "GET"])
         def success():
             if request.method == "GET":
                 return redirect(url_for('index'))
@@ -157,7 +157,7 @@ Thanks,
                 return render_template(template, email=email, type=True)
             return render_template(template, email=email, type=False)
 
-        @self.app.route("/success/<tid>", methods=["POST", "GET"])
+        @self.app.route("/deposit/success/<tid>", methods=["POST", "GET"])
         def successById(tid):
             try:
                 mail = self._db.getMail(tid)
